@@ -1,0 +1,16 @@
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/backchannel_real_1.wav", "txt": "你有没有发生过一些童年趣事呀？<BACKCHANNEL>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/backchannel_real_2.wav", "txt": "你有没有发生过一些童年趣事呀？<BACKCHANNEL>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/backchannel_synthetic_1.wav", "txt": "你有没有发生过一些童年趣事呀？<BACKCHANNEL>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/backchannel_synthetic_2.wav", "txt": "你有没有发生过一些童年趣事呀？<BACKCHANNEL>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/complete_real_1.wav", "txt": "你有没有发生过一些童年趣事呀？<COMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/complete_real_2.wav", "txt": "你有没有发生过一些童年趣事呀？<COMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/complete_synthetic_1.wav", "txt": "你有没有发生过一些童年趣事呀？<COMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/complete_synthetic_2.wav", "txt": "你有没有发生过一些童年趣事呀？<COMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/incomplete_real_1.wav", "txt": "你有没有发生过一些童年趣事呀？<INCOMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/incomplete_real_2.wav", "txt": "你有没有发生过一些童年趣事呀？<INCOMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/incomplete_synthetic_1.wav", "txt": "你有没有发生过一些童年趣事呀？<INCOMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/incomplete_synthetic_2.wav", "txt": "你有没有发生过一些童年趣事呀？<INCOMPLETE>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/wait_real_1.wav", "txt": "你有没有发生过一些童年趣事呀？<WAIT>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/wait_real_2.wav", "txt": "你有没有发生过一些童年趣事呀？<WAIT>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/wait_synthetic_1.wav", "txt": "你有没有发生过一些童年趣事呀？<WAIT>", "duration": 3.256}
+{"task": "<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>", "audio_filepath": "template/data/samples/wait_synthetic_2.wav", "txt": "你有没有发生过一些童年趣事呀？<WAIT>", "duration": 3.256}

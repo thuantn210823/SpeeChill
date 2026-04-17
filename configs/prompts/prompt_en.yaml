@@ -1,0 +1,13 @@
+<TRANSCRIBE>:
+  - Transcribe the following audio.
+  - Transcribe the speech content in this audio into text.
+  - Convert the speech part of the audio into text format, thank you.
+  - Record the speech content of this audio in detail as a transcript.
+  - Perform the speech recognition task to convert audio to text.
+
+<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>:
+  - Please transcribe the audio content and append one of the following four tags at the end for interruption judgment: <complete> for complete semantics, <incomplete> for incomplete semantics, <backchannel> for short acknowledgments, and <wait> for requests to pause or terminate the conversation.
+  - Please transcribe the audio into text and mark the interruption type at the end: <complete> (semantically complete), <incomplete> (semantically incomplete), <backchannel> (backchanneling), and <wait> (requesting to pause or end the dialogue).
+  - Transcribe the audio content first, then add an interruption judgment tag at the end: <complete> indicates complete semantics, <incomplete> indicates incomplete semantics, <backchannel> indicates a simple acknowledgment, and <wait> indicates a request to pause or suspend the conversation.
+  - Please convert the audio content to text and attach one of the following interruption tags at the end: <complete> (semantically complete), <incomplete> (semantically incomplete), <backchannel> (feedback signal), and <wait> (indicating a desire to pause or end the dialogue).
+  - Please perform a text transcription of the audio and indicate the interruption status at the end. The four tags are: <complete> for complete semantics, <incomplete> for incomplete semantics, <backchannel> for short acknowledgments, and <wait> for requests to pause or terminate the communication.

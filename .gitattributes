@@ -1,0 +1,2 @@
+*.safetensors filter=lfs diff=lfs merge=lfs -text
+src/Qwen2.5-0.5B-Instruct/* filter=lfs diff=lfs merge=lfs -text

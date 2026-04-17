@@ -1,0 +1,114 @@
+data:
+  _target_: src.speechill.tasks.Dataloader
+  train_dataset:
+    _target_: src.speechill.data.dataset.TurnTakingDataset
+    data_list: data/manifest.json
+    data_cfg:
+      n_fft: 400
+      hop_length: 160
+      num_mel_bins: 80
+  val_dataset:
+    _target_: src.speechill.data.dataset.TurnTakingDataset
+    data_list: data/manifest.json
+    data_cfg:
+      n_fft: 400
+      hop_length: 160
+      num_mel_bins: 80
+  loaders:
+    batch_size: 2
+    num_workers: 2
+    pin_memory: true
+
+model:
+  _target_: src.speechill.tasks.TurnTaking
+  model:
+    _target_: src.speechill.model.TurnTaking.MyTurnTakingModel
+    encoder:
+      _target_: torchaudio.models.Emformer
+      input_dim: 80
+      num_heads: 8
+      ffn_dim: 2048
+      num_layers: 15
+      segment_length: 4
+      dropout: 0.1
+      activation: 'relu'
+      weight_init_scale_strategy: depthwise
+    adapter:
+      _target_: src.speechill.model.adapters.base.LyzConvAdapter
+      encoder_dim: 1024
+      llm_dim: 896
+      kernel_size: 5
+      activation_func: gelu
+      norm: batch
+      dropout: 0.1
+    llm:
+      _target_: src.speechill.model.llms.base.BaseLLM
+      model_path: src/Qwen2.5-0.5B-Instruct
+      use_lora: false
+      lora_rank: 8
+      lora_alpha: 32
+      lora_dropout: 0.1
+      torch_dtype: bfloat16
+      max_length: 100
+      do_sample: false
+      temperature: 1.0
+      repetition_penalty: 1.05
+    prompt:
+      _target_: src.speechill.model.prompts.base.BasePromptModule
+      prompts_file: configs/prompts/prompt_en.yaml
+      random_selection: true
+    speech_token_num: 4097
+    ignore_id: -100
+  optimizer:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 5.0e-05
+    betas: [0.9, 0.99]
+    eps: 1.0e-06
+    weight_decay: 0.01
+
+  scheduler:
+    _target_: src.speechill.utils.scheduler.WarmupLR
+    _partial_: true
+    warmup_steps: 8000
+
+  ckpt: null
+
+training:
+  grad_clip: 5
+  accum_grad: 4
+  log_interval: 10
+  save_interval: 5000
+  max_epoch: 100
+
+callbacks:
+  lr:
+    _target_: lightning.pytorch.callbacks.LearningRateMonitor
+
+  ckpt:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    monitor: val_loss
+    save_top_k: 5
+    filename: "{epoch}-{val_loss:.5f}"
+
+logger:
+  tensorboard:
+    _target_: lightning.pytorch.loggers.TensorBoardLogger
+    save_dir: logs
+    name: TurnTaking
+    version: 1
+
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 100
+  strategy: ddp
+  accelerator: gpu
+  devices: [0, 1]
+  precision: 16-mixed
+  accumulate_grad_batches: 4
+  gradient_clip_val: 5
+  gradient_clip_algorithm: norm
+
+ckpt_path: null
+
+seed: 42
