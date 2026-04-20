@@ -66,12 +66,10 @@ class BasePromptModule:
         tok = tokenizer or self.tokenizer
         if tok is None:
             raise ValueError("No tokenizer provided")
-        return tok([prompt], return_tensors="pt")['input_ids']
-
-    def embed_task_prompt(self, task_name: str, tokenizer=None):
-        """Get embedded prompt for a given task."""
-        prompt = self.get_prompt(task_name)
-        return self.embed_prompt(prompt, tokenizer)
+        if isinstance(prompt, str):
+            return tok([prompt], return_tensors='pt', padding = True)
+        elif isinstance(prompt, list):
+            return tok(prompt, return_tensors="pt", padding = True)
 
     def get_prompt(self, task_name: str) -> str:
         """Get a prompt for the given task."""

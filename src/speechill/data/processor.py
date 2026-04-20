@@ -26,9 +26,6 @@ import torchaudio
 import torchaudio.compliance.kaldi as kaldi
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
-from wenet.text.base_tokenizer import BaseTokenizer
-
-torchaudio.utils.sox_utils.set_buffer_size(16500)
 
 AUDIO_FORMAT_SETS = set(['flac', 'mp3', 'm4a', 'ogg', 'opus', 'wav', 'wma'])
 
@@ -692,3 +689,33 @@ def padding(data):
             batch['prompt_lengths'] = prompt_lengths
 
         yield batch
+
+import torch
+
+def lengths_to_mask(lengths: torch.Tensor, max_len: int = None) -> torch.Tensor:
+    """
+    Converts sequence lengths to a boolean mask.
+    
+    Args:
+        lengths: Tensor of shape (B,) containing actual lengths.
+        max_len: Optional maximum length. If None, uses max(lengths).
+        
+    Returns:
+        mask: Boolean tensor of shape (B, 1, max_len)
+    """
+    if max_len is None:
+        max_len = lengths.max().item()
+    
+    batch_size = lengths.size(0)
+    
+    # Create a range tensor [0, 1, 2, ..., max_len-1]
+    # Shape: (max_len,)
+    ids = torch.arange(max_len, device=lengths.device)
+    
+    # Broadcast lengths to (B, max_len) and compare
+    # ids[None, :] expands to (1, max_len)
+    # lengths[:, None] expands to (B, 1)
+    mask = ids[None, :] < lengths[:, None]
+    
+    # Reshape to (B, 1, max_len) to match the expected input for Conv1d operations
+    return mask.unsqueeze(1)

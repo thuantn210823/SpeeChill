@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 from typing import Dict, Any, Optional, Tuple, List
 
+from src.speechill.data.processor import lengths_to_mask
+
 class MyTurnTakingModel(nn.Module):
     def __init__(self,
                  encoder,
@@ -31,7 +33,8 @@ class MyTurnTakingModel(nn.Module):
         wavs_len: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Process audio through encoder and adapter."""
-        encoder_out, encoder_mask = self.encoder(wavs, wavs_len) ## Check again because Enformer output vaid lengths not masks
+        encoder_out, encoder_lens = self.encoder(wavs, wavs_len) ## Check again because Enformer output vaid lengths not masks
+        encoder_mask = lengths_to_mask(encoder_lens)
         adapter_out, adapter_mask = self.adapter(encoder_out, encoder_mask)
         return adapter_out, adapter_mask
 
@@ -49,15 +52,15 @@ class MyTurnTakingModel(nn.Module):
         eos_embed = self.speech_token_embed(
             torch.full((B, 1), 1, device=embeds.device)
         )
-        bos_eos_target = torch.full((B, 1), self.ignore_id, deivce = embeds.device)
+        bos_eos_target = torch.full((B, 1), self.ignore_id, device = embeds.device)
         bos_eos_mask = torch.full((B, 1), True, device=embeds.device)
 
         embeds = torch.cat([bos_embed, embeds, eos_embed], dim=1)
-        masks = torch.cat([bos_eos_mask, masks, bos_eos_mask], dim=1)
+        masks = torch.cat([bos_eos_mask, masks.squeeze(1), bos_eos_mask], dim=1)
 
         if target is not None:
             # ignore_target = torch.full((B, 2), self.ignore_id, device=embeds.device)
-            target = torch.cat([bos_eos_target, target, bos_eos_target], dim=1)
+            target = torch.cat([bos_eos_target, target.squeeze(1), bos_eos_target], dim=1)
 
         return embeds, masks, target
 
@@ -78,18 +81,15 @@ class MyTurnTakingModel(nn.Module):
             speech_embeds, speech_masks, speech_target
         )
 
-        if 'prompt' in batch:
-            prompt = batch['prompt'].to(device)
-            prompt_embeds = self.llm.embed_tokens(prompt)
-            prompt_target = torch.full(prompt.shape, self.ignore_id, device=device)
-            prompt_mask = torch.ones_like(prompt, dtype=torch.bool, device=device)
-        else:
-            prompt_embeds = None
-            prompt_target = None
-            prompt_mask = None
+        prompt_list = [self.prompt.get_prompt(prompt) for prompt in batch['task']]
+        prompt_out = self.prompt.embed_prompt(prompt_list, self.llm.tokenizer)
+        prompt_embeds = self.llm.embed_tokens(prompt_out['input_ids'])
+        prompt_mask = prompt_out['attention_mask']
+        prompt_target = torch.full(prompt_out['input_ids'].shape, self.ignore_id, device=device)
 
-        labels_embeds = self.llm.embed_tokens(labels)
-        labels_mask = torch.ones_like(labels, dtype=torch.bool, device=labels.device)
+        label_outs = self.llm.tokenizer(labels, return_tensors='pt', padding = True)
+        labels_embeds = self.llm.embed_tokens(label_outs['input_ids'])
+        labels_mask = label_outs['attention_mask']
 
         inputs_list = []
         masks_list = []
@@ -102,14 +102,14 @@ class MyTurnTakingModel(nn.Module):
 
         inputs_list.extend([speech_embeds, labels_embeds])
         masks_list.extend([speech_masks, labels_mask])
-        targets_list.extend([speech_target, labels])
+        targets_list.extend([speech_target, label_outs['input_ids']])
 
-        inputs_embeds = torch.cat(inputs_list, dim=1)
-        attention_mask = torch.cat(masks_list, dim=1)
-        target = torch.cat(targets_list, dim=1)
+        inputs_embeds = torch.cat(inputs_list, dim=1).to(self.llm.model.dtype)
+        attention_mask = torch.cat(masks_list, dim=1).to(self.llm.model.dtype)
+        target = torch.cat(targets_list, dim=1).to(torch.long)
 
-        position_ids = attention_mask.long().cumsum(-1) - 1
-        position_ids.masked_fill_(attention_mask == 0, 1)
+        # position_ids = attention_mask.long().cumsum(-1) - 1
+        # position_ids.masked_fill_(attention_mask == 0, 1)
 
         outputs = self.llm(
             input_embeds=inputs_embeds,
