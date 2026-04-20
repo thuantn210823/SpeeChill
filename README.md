@@ -123,7 +123,7 @@ Prompts are defined in YAML files (`configs/prompts/`):
 | Task | Description | Output Example |
 |------|-------------|----------------|
 | `<TRANSCRIBE>` | ASR only | "yeb" |
-| `<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>` | ASR + Turn-Taking | "yeb<BACKCHANNEL>" |
+| `<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>` | ASR + Turn-Taking | "yeb <BACKCHANNEL>" |
 
 ## Components
 
@@ -251,46 +251,6 @@ The training script uses Hydra for configuration management and Lightning for tr
 | use_lora | false | Enable LoRA fine-tuning |
 
 ## Inference
-
-### Python API
-
-```python
-import torch
-from src.speechill.model.TurnTaking import MyTurnTakingModel
-from src.speechill.model.llms import create_llm
-from src.speechill.model.encoders import create_encoder
-from src.speechill.model.adapters import create_adapter
-from src.speechill.model.prompts import create_prompt_module
-import torchaudio
-
-# Load model components
-encoder = create_encoder(config['encoder'])
-adapter = create_adapter(config['adapter'])
-llm = create_llm(config['llm'])
-prompt = create_prompt_module(config['prompt'])
-
-# Create model
-model = MyTurnTakingModel(
-    encoder=encoder,
-    adapter=adapter,
-    llm=llm,
-    prompt=prompt,
-    ignore_id=-100
-)
-
-# Load audio
-wav, sr = torchaudio.load("audio.wav")
-wav = wav.mean(dim=0)  # Convert stereo to mono
-
-# Generate
-results = model.generate(
-    wavs=wav.unsqueeze(0),
-    wavs_len=torch.tensor([wav.shape[0]]),
-    task="<TRANSCRIBE> <BACKCHANNEL> <COMPLETE>"
-)
-
-print(results)  # ["文本内容<BACKCHANNEL>"]
-```
 
 ### Supported Generation Tasks
 
