@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import copy
 import librosa
 import logging
@@ -719,3 +721,21 @@ def lengths_to_mask(lengths: torch.Tensor, max_len: int = None) -> torch.Tensor:
     
     # Reshape to (B, 1, max_len) to match the expected input for Conv1d operations
     return mask.unsqueeze(1)
+
+def extract_filterbank(
+    waveform: torch.Tensor,
+    sample_rate: int,
+    normalize: Optional[bool] = False
+) -> torch.Tensor:
+    transformation = torchaudio.transforms.MelSpectrogram(
+        sample_rate=sample_rate,
+        n_fft = int(0.05*sample_rate),
+        win_length=int(0.025*sample_rate),
+        hop_length=int(0.01*sample_rate)
+        n_mels = 128,
+        center = False
+    )
+    filterbank = transformation(waveform).squeeze(0)
+    filterbank = filterbank.clamp(1e-5).log()
+
+    return filterbank

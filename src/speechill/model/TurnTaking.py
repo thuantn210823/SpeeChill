@@ -25,7 +25,7 @@ class MyTurnTakingModel(nn.Module):
         self.prompt = prompt
         self.ignore_id = ignore_id
 
-        self.speech_token_embed = nn.Embedding(2, self.llm.hidden_size)
+        self.speech_token_embed = nn.Embedding(2, self.llm.model.config.hidden_size)
 
     def get_embedding_from_wav(
         self,
@@ -71,8 +71,8 @@ class MyTurnTakingModel(nn.Module):
     ) -> Dict[str, torch.Tensor]:
         """Forward pass for training."""
         wavs = batch['feats'].to(device)
-        wavs_len = batch['feats_lengths'].to(device)
-        labels = batch['target'].to(device)
+        wavs_len = batch['feat_lengths'].to(device)
+        labels = batch['target']
 
         speech_embeds, speech_masks = self.get_embedding_from_wav(wavs, wavs_len)
         speech_target = torch.full(speech_masks.shape, self.ignore_id, device=speech_embeds.device)
@@ -83,13 +83,14 @@ class MyTurnTakingModel(nn.Module):
 
         prompt_list = [self.prompt.get_prompt(prompt) for prompt in batch['task']]
         prompt_out = self.prompt.embed_prompt(prompt_list, self.llm.tokenizer)
-        prompt_embeds = self.llm.embed_tokens(prompt_out['input_ids'])
-        prompt_mask = prompt_out['attention_mask']
+        prompt_embeds = self.llm.model.get_input_embeddings()(prompt_out['input_ids'].to(device))
+        prompt_mask = prompt_out['attention_mask'].to(device)
         prompt_target = torch.full(prompt_out['input_ids'].shape, self.ignore_id, device=device)
 
-        label_outs = self.llm.tokenizer(labels, return_tensors='pt', padding = True)
-        labels_embeds = self.llm.embed_tokens(label_outs['input_ids'])
-        labels_mask = label_outs['attention_mask']
+        _labels = [label + self.llm.tokenizer.eos_token for label in labels]
+        label_outs = self.llm.tokenizer(_labels, return_tensors='pt', padding = True)
+        labels_embeds = self.llm.embed_tokens(label_outs['input_ids'].to(device))
+        labels_mask = label_outs['attention_mask'].to(device)
 
         inputs_list = []
         masks_list = []
@@ -102,7 +103,7 @@ class MyTurnTakingModel(nn.Module):
 
         inputs_list.extend([speech_embeds, labels_embeds])
         masks_list.extend([speech_masks, labels_mask])
-        targets_list.extend([speech_target, label_outs['input_ids']])
+        targets_list.extend([speech_target, label_outs['input_ids'].to(device)])
 
         inputs_embeds = torch.cat(inputs_list, dim=1).to(self.llm.model.dtype)
         attention_mask = torch.cat(masks_list, dim=1).to(self.llm.model.dtype)

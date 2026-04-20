@@ -3,20 +3,19 @@ from omegaconf import DictConfig
 
 import torch
 import lightning as L
-from src.speechill.data.dataset import TurnTakingDataset
+from torch.nn.utils.rnn import pad_sequence
 
 class Dataloader(L.LightningDataModule):
     def __init__(self,
                  train_dataset: DictConfig,
                  val_dataset: DictConfig,
-                 test_dataset: DictConfig,
-                 loaders: DictConfig,
-                 ckpt: Optional[DictConfig] = None):
+                 test_dataset: DictConfig = None,
+                 loaders: DictConfig = None):
         super().__init__()
         self.save_hyperparameters()
-        self.train_dataset = TurnTakingDataset(**train_dataset) if train_dataset else None
-        self.val_dataset = TurnTakingDataset(**val_dataset) if val_dataset else None
-        self.test_dataset = TurnTakingDataset(**test_dataset) if test_dataset else None
+        self.train_dataset = train_dataset
+        self.val_dataset = val_dataset
+        self.test_dataset = test_dataset
         self.loaders = loaders
     
     def train_dataloader(self):
@@ -43,20 +42,33 @@ class Dataloader(L.LightningDataModule):
         return None
 
     def collate_fn(self, batch):
-        from src.speechill.data.processor import padding
-        return padding(iter(batch))
+        _batch = {'feats': [],
+                  'feat_lengths': [],
+                  'targets': [],
+                  'tasks': []}
+        for sample in batch:
+            _batch['feats'].append(sample['feat'].transpose(0, 1))
+            _batch['feat_lengths'].append(sample['feat'].shape[-1])
+            _batch['tasks'].append(sample['task'])
+            _batch['targets'].append(sample['text'])
+        _batch['feats'] = pad_sequence(_batch['feats'], batch_first = True)
+        _batch['feat_lengths'] = torch.tensor(_batch['feat_lengths'], dtype = torch.long)
+        return _batch
 
 class TurnTaking(L.LightningModule):
     def __init__(self,
                  model: Callable,
                  lr: float,
                  optimizer: Callable,
-                 scheduler: Callable):
+                 scheduler: Callable,
+                 ckpt: Optional[DictConfig] = None):
         super().__init__()
         self.model = model
         self.lr = lr
         self.optimizer = optimizer
         self.scheduler = scheduler
+        if ckpt is not None:
+            self.load_ckpt(ckpt)
     
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)
@@ -86,7 +98,7 @@ class TurnTaking(L.LightningModule):
                 "lr_scheduler": {
                     "scheduler": scheduler,
                     "monitor": "val_loss",
-                    "interval": "epoch",
+                    "interval": "step",
                     "frequency": 1
                 }
             }

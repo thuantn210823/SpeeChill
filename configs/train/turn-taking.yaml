@@ -1,12 +1,8 @@
 data:
-  _target_: src.speechill.tasks.Dataloader
+  _target_: src.speechill.tasks.turn_taking.Dataloader
   train_dataset:
     _target_: src.speechill.data.dataset.TurnTakingDataset
     data_list: data/manifest.json
-    data_cfg:
-      n_fft: 400
-      hop_length: 160
-      num_mel_bins: 80
   val_dataset:
     _target_: src.speechill.data.dataset.TurnTakingDataset
     data_list: data/manifest.json
@@ -20,7 +16,7 @@ data:
     pin_memory: true
 
 model:
-  _target_: src.speechill.tasks.TurnTaking
+  _target_: src.speechill.tasks.turn_taking.TurnTaking
   model:
     _target_: src.speechill.model.TurnTaking.MyTurnTakingModel
     encoder:
@@ -57,7 +53,6 @@ model:
       _target_: src.speechill.model.prompts.base.BasePromptModule
       prompts_file: configs/prompts/prompt_en.yaml
       random_selection: true
-    speech_token_num: 4097
     ignore_id: -100
   optimizer:
     _target_: torch.optim.AdamW
