@@ -1,6 +1,6 @@
-# Speech-Language Model (SLM): ASR & Turn-Taking
+# SpeeChill
 
-A modular spoken language understanding system that supports both **Automatic Speech Recognition (ASR)** and **Turn-Taking Detection** through a unified architecture. The model automatically switches behavior based on the `task` field in the data manifest.
+SpeeChill: A Speech Language Model (SLM) system that supports diversed tasks, such as **Automatic Speech Recognition (ASR)** and **Turn-Taking Detection** through a unified architecture. The model automatically switches behavior based on the `task` field in the data manifest.
 
 ## Table of Contents
 
