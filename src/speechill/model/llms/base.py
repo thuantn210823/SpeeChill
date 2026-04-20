@@ -45,13 +45,16 @@ class BaseLLM(nn.Module):
                 target_modules=lora_target_modules,
             )
             self.model = get_peft_model(self.model, lora_config)
-            self.hidden_size = self.model.config.hidden_size
-            self.vocab_size = self.model.config.vocab_size
+        else:
+            for param in self.model.parameters():
+                param.requires_grad = False
+        self.hidden_size = self.model.config.hidden_size
+        self.vocab_size = self.model.config.vocab_size
 
-            self.max_length = max_length
-            self.do_sample = do_sample
-            self.temperature = temperature
-            self.repetition_penalty = repetition_penalty
+        self.max_length = max_length
+        self.do_sample = do_sample
+        self.temperature = temperature
+        self.repetition_penalty = repetition_penalty
 
     def forward(
         self,

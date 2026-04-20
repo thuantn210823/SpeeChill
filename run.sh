@@ -1,0 +1,1 @@
+HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=0 TOKENIZERS_PARALLELISM=0 python train.py --config-name=turn-taking

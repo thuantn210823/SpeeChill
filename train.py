@@ -56,7 +56,7 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
     return metric_dict, object_dict
 
-@hydra.main(version_base=None, config_path="configs")
+@hydra.main(version_base=None, config_path="configs/train")
 def main(cfg: DictConfig) -> Optional[float]:
     metric_dict, object_dict = train(cfg)
 
