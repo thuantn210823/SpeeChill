@@ -145,8 +145,8 @@ class MyTurnTakingModel(nn.Module):
         # )
         attention_mask = torch.cat([prompt_mask, speech_masks], dim = 1)
 
-        if inputs_embeds.dtype == torch.float16:
-            inputs_embeds = inputs_embeds.to(torch.bfloat16)
+        inputs_embeds = inputs_embeds.to(self.llm.model.dtype)
+        attention_mask = attention_mask.to(self.llm.model.dtype)
 
         outputs = self.llm.generate(
             inputs_embeds=inputs_embeds,
@@ -155,4 +155,4 @@ class MyTurnTakingModel(nn.Module):
             pad_token_id=-100
         )
 
-        return self.llm.decode(outputs)
+        return self.llm.tokenier.decode(outputs, skip_special_tokens = True)
