@@ -133,15 +133,17 @@ class MyTurnTakingModel(nn.Module):
         speech_embeds, speech_masks, _ = self.add_speech_tokens(speech_embeds, speech_masks)
 
         prompt_text = self.prompt.get_prompt(task)
-        prompt_ids = self.prompt.embed_prompt(prompt_text, self.llm.tokenizer)
-        prompt_embeds = self.llm.embed_tokens(prompt_ids.to(speech_embeds.device))
+        prompt_out = self.prompt.embed_prompt(prompt_text, self.llm.tokenizer)
+        prompt_embeds = self.llm.model.get_input_embeddings()(prompt_out['input_ids'].to(wavs.device))
+        prompt_mask = prompt_out['attention_mask'].to(wavs.device)
 
         inputs_embeds = torch.cat([prompt_embeds, speech_embeds], dim=1)
-        attention_mask = torch.ones(
-            inputs_embeds.size()[:-1],
-            dtype=torch.long,
-            device=inputs_embeds.device
-        )
+        # attention_mask = torch.ones(
+        #     inputs_embeds.size()[:-1],
+        #     dtype=torch.long,
+        #     device=inputs_embeds.device
+        # )
+        attention_mask = torch.cat([prompt_mask, speech_masks], dim = 1)
 
         if inputs_embeds.dtype == torch.float16:
             inputs_embeds = inputs_embeds.to(torch.bfloat16)
@@ -149,7 +151,7 @@ class MyTurnTakingModel(nn.Module):
         outputs = self.llm.generate(
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
-            eos_token_id=151643,
+            eos_token_id=self.llm.model.config.eos_token_id,
             pad_token_id=-100
         )
 
