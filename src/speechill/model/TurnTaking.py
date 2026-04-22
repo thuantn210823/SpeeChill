@@ -152,7 +152,9 @@ class MyTurnTakingModel(nn.Module):
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
             eos_token_id=self.llm.model.config.eos_token_id,
-            pad_token_id=-100
+            pad_token_id=-100,
+            do_sample = False,
+            max_length = self.llm.max_length
         )
 
         return self.llm.tokenier.decode(outputs, skip_special_tokens = True)
